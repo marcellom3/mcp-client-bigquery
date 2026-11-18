@@ -11,6 +11,8 @@ Você **não instala servidor, Python nem credenciais do Google**. O administrad
 
 A chave já define **qual BigQuery** você acessa (o da CLI ou o da sua empresa) e **quais datasets** (o projeto inteiro ou só alguns).
 
+O mesmo servidor atende vários clientes, mas cada um tem acesso **isolado**: a sua chave só alcança o seu BigQuery, e nenhum outro cliente enxerga os seus dados.
+
 ---
 
 ## 1. Antes de começar: o que pedir ao administrador
@@ -118,7 +120,9 @@ Pule este passo se você vai consultar dados que já estão no BigQuery da CLI.
 
 ### Opção 1 (recomendada): conceder acesso à Service Account da CLI
 
-Nenhuma chave privada da sua empresa sai do seu ambiente, e você pode revogar o acesso quando quiser. O administrador informa o e-mail da Service Account da CLI (`<sa-da-cli>@...iam.gserviceaccount.com`).
+Nenhuma chave privada da sua empresa sai do seu ambiente, e você pode revogar o acesso quando quiser.
+
+O administrador cria uma Service Account **exclusiva para a sua empresa** e informa o e-mail dela (`<sa-da-cli>@...iam.gserviceaccount.com`). Ela não é compartilhada com nenhum outro cliente, e os dados da sua empresa só são lidos com ela.
 
 No projeto GCP da sua empresa, conceda os dois acessos abaixo.
 
