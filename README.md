@@ -19,8 +19,8 @@ Envie ao administrador:
 
 - **Quem vai usar:** nome e e-mail de cada pessoa. Cada pessoa recebe a própria chave.
 - **Qual BigQuery:**
-  - **o da CLI**: só informe quais dados precisa acessar;
-  - **o da sua empresa**: siga antes o [passo 4](#4-usando-o-bigquery-da-sua-empresa) e informe o **ID do projeto** GCP.
+    - **o da CLI**: só informe quais dados precisa acessar;
+    - **o da sua empresa**: siga antes o [passo 4](#4-usando-o-bigquery-da-sua-empresa) e informe o **ID do projeto** GCP.
 - **Escopo:** o **projeto inteiro** ou só os **datasets** (liste os nomes).
 - **Validade** desejada (opcional), por exemplo 30 dias para um consultor.
 
@@ -84,19 +84,20 @@ Requisito: [Node.js](https://nodejs.org) 18 ou mais recente instalado.
 1. No Claude Desktop, abra **Configurações → Desenvolvedor → Editar configuração**. Isso abre o `claude_desktop_config.json`.
 2. Adicione o bloco abaixo, trocando a URL e a chave. Se já existir um `"mcpServers"`, inclua só o item `"bigquery"`.
 
-   ```json
-   {
-     "mcpServers": {
-       "bigquery": {
-         "command": "npx",
-         "args": ["-y", "mcp-remote", "https://<endereço-informado>/mcp", "--header", "Authorization:${MCP_BIGQUERY_AUTH}"],
-         "env": { "MCP_BIGQUERY_AUTH": "Bearer mcpbq_SUA_CHAVE" }
-       }
-     }
-   }
-   ```
+    ```json
+    {
+      "mcpServers": {
+        "bigquery": {
+          "command": "npx",
+          "args": ["-y", "mcp-remote", "https://<endereço-informado>/mcp", "--header", "Authorization:${MCP_BIGQUERY_AUTH}"],
+          "env": { "MCP_BIGQUERY_AUTH": "Bearer mcpbq_SUA_CHAVE" }
+        }
+      }
+    }
+    ```
 
-   > A chave fica no `env`, e não direto nos `args`, porque no Windows espaços dentro dos argumentos quebram o cabeçalho.
+    > A chave fica no `env`, e não direto nos `args`, porque no Windows espaços dentro dos argumentos quebram o cabeçalho.
+
 3. **Feche o Claude Desktop pela bandeja do sistema** e abra de novo. O BigQuery aparece no menu **+ → Conectores** de cada conversa.
 
 ### Opção B: conector personalizado (sem Node.js)
@@ -104,8 +105,8 @@ Requisito: [Node.js](https://nodejs.org) 18 ou mais recente instalado.
 Em **Configurações → Conectores → Adicionar conector personalizado**, informe a URL. O que fazer em seguida depende da sua conta:
 
 - **Se a sua conta mostrar "Request headers"/"Cabeçalhos de requisição":**
-  1. Escolha **No sign-in**.
-  2. Adicione o cabeçalho `authorization` com o valor `Bearer mcpbq_SUA_CHAVE`.
+    1. Escolha **No sign-in**.
+    2. Adicione o cabeçalho `authorization` com o valor `Bearer mcpbq_SUA_CHAVE`.
 - **Se não mostrar:** esse recurso ainda está em liberação gradual pela Anthropic. Use a opção A. O login por OAuth está no roadmap do servidor e vai dispensar o `mcp-remote`.
 - **Planos Team e Enterprise:** só o Owner da organização adiciona conectores personalizados.
 
