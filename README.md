@@ -116,6 +116,7 @@ O Claude Code se conecta direto ao servidor, sem ponte e sem Node.js.
     ```
 
     - `--scope user` deixa o BigQuery disponível em todos os seus projetos. Para usar só na pasta atual, troque por `--scope local`.
+    - **Já tem outro servidor MCP chamado `bigquery`** (por exemplo, uma instalação local antiga)? Use outro nome, como `bigquery-remoto`, no lugar de `bigquery` no comando. Se os nomes forem iguais, a configuração de uma pasta específica (escopo `local`) tem prioridade sobre a de `--scope user`, e o Claude Code pode acabar usando o servidor antigo.
 
 2. **Confira a conexão:**
 
@@ -123,7 +124,7 @@ O Claude Code se conecta direto ao servidor, sem ponte e sem Node.js.
     claude mcp list
     ```
 
-    O `bigquery` deve aparecer com **✓ Connected**.
+    O `bigquery` deve aparecer com **✓ Connected**. Para ver os detalhes, rode `claude mcp get bigquery`: deve mostrar o tipo **http** e a URL do servidor.
 
 3. **Teste:** abra o Claude Code (`claude`) e pergunte **"Quais datasets eu tenho no BigQuery?"**. Na primeira vez, autorize o uso da ferramenta. Dentro do Claude Code, o comando `/mcp` mostra o servidor e as ferramentas.
 
