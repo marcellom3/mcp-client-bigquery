@@ -4,9 +4,9 @@ Conecte o seu Claude ao **Google BigQuery** para consultar seus dados conversand
 
 Você **não instala servidor, Python nem credenciais do Google**. O administrador da CLI Consultoria envia duas informações, e você as configura no seu Claude:
 
-| Você recebe | Exemplo |
+| Você recebe | Valor |
 |---|---|
-| **URL do servidor** | `https://<endereço-informado>/mcp` |
+| **URL do servidor** | `https://mcp-bigquery.tsk4ad.easypanel.host/mcp` |
 | **Chave de API** (pessoal, intransferível) | `mcpbq_1a2b3c4d_...` |
 
 A chave já define **qual BigQuery** você acessa (o da CLI ou o da sua empresa) e **quais datasets** (o projeto inteiro ou só alguns).
@@ -63,14 +63,14 @@ O Claude Desktop se conecta ao servidor por meio de uma pequena ponte, o `mcp-re
 
     No Windows, cole o caminho na barra de endereço do Explorador de Arquivos. Se o arquivo não existir, crie-o com esse nome.
 
-2. Adicione o bloco abaixo, trocando `<endereço-informado>` pela URL que você recebeu e `mcpbq_SUA_CHAVE` pela sua chave. Mantenha a palavra `Bearer` e o espaço antes da chave. Se o arquivo já tiver um `"mcpServers"`, inclua só o item `"bigquery"` dentro dele, separado dos outros por vírgula.
+2. Adicione o bloco abaixo, trocando `mcpbq_SUA_CHAVE` pela chave que você recebeu (a URL já está certa). Mantenha a palavra `Bearer` e o espaço antes da chave. Se o arquivo já tiver um `"mcpServers"`, inclua só o item `"bigquery"` dentro dele, separado dos outros por vírgula.
 
     ```json
     {
       "mcpServers": {
         "bigquery": {
           "command": "npx",
-          "args": ["-y", "mcp-remote", "https://<endereço-informado>/mcp", "--header", "Authorization:${MCP_BIGQUERY_AUTH}"],
+          "args": ["-y", "mcp-remote", "https://mcp-bigquery.tsk4ad.easypanel.host/mcp", "--header", "Authorization:${MCP_BIGQUERY_AUTH}"],
           "env": { "MCP_BIGQUERY_AUTH": "Bearer mcpbq_SUA_CHAVE" }
         }
       }
@@ -109,10 +109,10 @@ O Claude Code se conecta direto ao servidor, sem ponte e sem Node.js.
 
 ### Passo a passo
 
-1. Num terminal (PowerShell, CMD, bash ou zsh), rode o comando abaixo, trocando a URL e a chave:
+1. Num terminal (PowerShell, CMD, bash ou zsh), rode o comando abaixo, trocando `mcpbq_SUA_CHAVE` pela chave que você recebeu (a URL já está certa):
 
     ```bash
-    claude mcp add --transport http --scope user bigquery https://<endereço-informado>/mcp --header "Authorization: Bearer mcpbq_SUA_CHAVE"
+    claude mcp add --transport http --scope user bigquery https://mcp-bigquery.tsk4ad.easypanel.host/mcp --header "Authorization: Bearer mcpbq_SUA_CHAVE"
     ```
 
     - `--scope user` deixa o BigQuery disponível em todos os seus projetos. Para usar só na pasta atual, troque por `--scope local`.
@@ -155,7 +155,7 @@ O Claude Code se conecta direto ao servidor, sem ponte e sem Node.js.
       "mcpServers": {
         "bigquery": {
           "type": "http",
-          "url": "https://<endereço-informado>/mcp",
+          "url": "https://mcp-bigquery.tsk4ad.easypanel.host/mcp",
           "headers": { "Authorization": "Bearer ${MCP_BIGQUERY_KEY}" }
         }
       }
