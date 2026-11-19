@@ -24,7 +24,7 @@ Envie ao administrador:
     - **o da CLI**: só informe quais dados precisa acessar;
     - **o da sua empresa**: siga antes o [passo 4](#4-usando-o-bigquery-da-sua-empresa) e informe o **ID do projeto** GCP.
 - **Escopo:** o **projeto inteiro** ou só os **datasets** (liste os nomes).
-- **Validade** desejada (opcional), por exemplo 30 dias para um consultor.
+- **Validade** desejada (opcional), por exemplo 30 dias para um consultor. A validade é contada a partir da criação da chave: 1 dia = 24 horas.
 
 Você recebe de volta a **URL** e a **chave**. Guarde a chave como uma senha.
 
@@ -187,6 +187,6 @@ O Claude tem estas ferramentas: `list_datasets`, `list_tables`, `get_table_schem
 
 ## Segurança
 
-- A chave é **pessoal**. Não a compartilhe nem a coloque em repositórios.
+- A chave é **pessoal**. Você pode usá-la em todos os seus computadores, no Claude Code e no Claude Desktop, mas não a compartilhe com outras pessoas nem a coloque em repositórios.
 - Perdeu a chave ou suspeita de vazamento? Peça a **revogação** ao administrador. O acesso é cortado na hora.
 - Para remover do Claude Code: `claude mcp remove bigquery`. No Claude Desktop, apague o bloco `"bigquery"` da configuração.
