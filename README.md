@@ -81,10 +81,26 @@ Abra um terminal novo para a variável valer.
 
 ### Opção A: arquivo de configuração + `mcp-remote` (funciona hoje, em qualquer plano)
 
-Requisito: [Node.js](https://nodejs.org) 18 ou mais recente instalado.
+Requisitos:
 
-1. No Claude Desktop, abra **Configurações → Desenvolvedor → Editar configuração**. Isso abre o `claude_desktop_config.json`.
-2. Adicione o bloco abaixo, trocando a URL e a chave. Se já existir um `"mcpServers"`, inclua só o item `"bigquery"`.
+- [Node.js](https://nodejs.org), versão **LTS** (a recomendada no site). Depois de instalar, **reinicie o computador**, para o Claude Desktop encontrar o `npx`.
+- Internet liberada para o npm: na primeira vez, o `npx` baixa automaticamente o `mcp-remote`, a ponte entre o Claude Desktop e o servidor.
+
+Passo a passo:
+
+1. No Claude Desktop, abra **Configurações → Desenvolvedor → Editar configuração**. Isso mostra o arquivo `claude_desktop_config.json`. Abra-o num editor de texto (ex.: Bloco de Notas).
+
+    Se não encontrar essa opção, abra o arquivo direto:
+
+    | Sistema | Caminho do arquivo |
+    |---|---|
+    | Windows (instalador do site) | `%APPDATA%\Claude\claude_desktop_config.json` |
+    | Windows (Microsoft Store) | `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json` |
+    | macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+
+    No Windows, cole o caminho na barra de endereço do Explorador de Arquivos. Se o arquivo não existir, crie-o com esse nome.
+
+2. Adicione o bloco abaixo, trocando `<endereço-informado>` pela URL que você recebeu e `mcpbq_SUA_CHAVE` pela sua chave. Mantenha a palavra `Bearer` e o espaço antes da chave. Se o arquivo já tiver um `"mcpServers"`, inclua só o item `"bigquery"` dentro dele, separado dos outros por vírgula.
 
     ```json
     {
@@ -100,7 +116,10 @@ Requisito: [Node.js](https://nodejs.org) 18 ou mais recente instalado.
 
     > A chave fica no `env`, e não direto nos `args`, porque no Windows espaços dentro dos argumentos quebram o cabeçalho.
 
-3. **Feche o Claude Desktop pela bandeja do sistema** e abra de novo. O BigQuery aparece no menu **+ → Conectores** de cada conversa.
+3. Salve o arquivo. **Feche o Claude Desktop por completo**: no Windows, clique com o botão direito no ícone da bandeja do sistema (perto do relógio) e escolha **Sair**; fechar só a janela não basta. Depois, abra o app de novo.
+4. **Teste:** numa conversa nova, pergunte **"Quais datasets eu tenho no BigQuery?"**. Na primeira vez, o Claude pede autorização para usar a ferramenta do BigQuery: permita. A resposta deve listar os datasets liberados para a sua chave.
+
+    Se não funcionar, veja **Configurações → Desenvolvedor** (o `bigquery` deve aparecer como em execução) e a seção 6.
 
 ### Opção B: conector personalizado (sem Node.js)
 
@@ -182,8 +201,11 @@ O Claude tem estas ferramentas: `list_datasets`, `list_tables`, `get_table_schem
 | `ScopeError: Dataset 'x' não está liberado` | A sua chave não inclui esse dataset. Peça a inclusão ao administrador. |
 | `Forbidden` / `Access Denied` vindo do BigQuery | Falta permissão IAM para a Service Account no projeto ou no dataset (passo 4). |
 | `NotFound` | Nome da tabela ou dataset errado, ou região diferente. Use `list_tables` para conferir. |
-| Claude Desktop não mostra o BigQuery | O JSON da configuração está inválido, ou o app não foi fechado pela bandeja. Veja os logs em **Configurações → Desenvolvedor**. |
-| `npx` não encontrado | Instale o Node.js e reinicie o computador ou o Claude Desktop. |
+| Claude Desktop não mostra o BigQuery | O JSON da configuração está inválido (vírgula ou chave `}` faltando), ou o app não foi fechado pela bandeja. Confira o arquivo num validador de JSON e veja os logs (linha abaixo). |
+| Onde ficam os logs do Claude Desktop | Windows: `%APPDATA%\Claude\logs\mcp-server-bigquery.log`. macOS: `~/Library/Logs/Claude/mcp-server-bigquery.log`. Também em **Configurações → Desenvolvedor**. |
+| `spawn npx ENOENT` ou `npx` não encontrado | O Node.js não está instalado ou o computador não foi reiniciado depois da instalação. Se continuar no Windows, troque `"command": "npx"` por `"command": "C:\\Program Files\\nodejs\\npx.cmd"` (com as barras duplas). |
+| Erro de rede ao baixar o `mcp-remote` | A rede bloqueia o npm (comum em redes corporativas com proxy). Teste em outra rede ou peça a liberação de `registry.npmjs.org` à sua TI. |
+| O navegador abre pedindo autorização (OAuth) | A chave não chegou ao servidor. Confira o `env` (`"Bearer mcpbq_..."`) e o `--header` (`"Authorization:${MCP_BIGQUERY_AUTH}"`), exatamente como no passo 2. |
 
 ## Segurança
 
