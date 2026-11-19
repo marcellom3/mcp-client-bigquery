@@ -13,6 +13,15 @@ A chave já define **qual BigQuery** você acessa (o da CLI ou o da sua empresa)
 
 O mesmo servidor atende vários clientes, mas cada um tem acesso **isolado**: a sua chave só alcança o seu BigQuery, e nenhum outro cliente enxerga os seus dados.
 
+## Escolha o seu cenário
+
+| Você usa | Siga | O que precisa instalar |
+|---|---|---|
+| **Claude Desktop** (app de chat), **plano grátis** | [Cenário 1](#2-cenário-1-claude-desktop-plano-grátis) | Claude Desktop + Node.js |
+| **Claude Code**, **plano Pro** | [Cenário 2](#3-cenário-2-claude-code-plano-pro) | Claude Code |
+
+A mesma chave funciona nos dois cenários, e em todos os seus computadores.
+
 ---
 
 ## 1. Antes de começar: o que pedir ao administrador
@@ -30,63 +39,17 @@ Você recebe de volta a **URL** e a **chave**. Guarde a chave como uma senha.
 
 ---
 
-## 2. Configurar no Claude Code (recomendado)
+## 2. Cenário 1: Claude Desktop (plano grátis)
 
-Requisito: [Claude Code](https://code.claude.com/docs) instalado e logado.
+O Claude Desktop se conecta ao servidor por meio de uma pequena ponte, o `mcp-remote`, que roda no seu computador com o Node.js.
 
-No terminal (PowerShell, CMD, bash ou zsh), rode o comando abaixo trocando a URL e a chave:
+### Requisitos
 
-```bash
-claude mcp add --transport http --scope user bigquery https://<endereço-informado>/mcp --header "Authorization: Bearer mcpbq_SUA_CHAVE"
-```
+- **Claude Desktop** instalado, com login na sua conta (o plano grátis serve).
+- **[Node.js](https://nodejs.org)**, versão **LTS** (a recomendada no site). Depois de instalar, **reinicie o computador**, para o Claude Desktop encontrar o `npx`.
+- **Internet liberada para o npm.** Na primeira vez, o `npx` baixa automaticamente o `mcp-remote`.
 
-- `--scope user` deixa o BigQuery disponível em todos os seus projetos. Para usar só na pasta atual, troque por `--scope local`.
-- Para conferir, rode `claude mcp list`. Deve aparecer `bigquery ... ✓ Connected`. Dentro do Claude Code, o comando `/mcp` mostra o servidor e as ferramentas.
-
-### Alternativa: chave em variável de ambiente (sem gravá-la em arquivo)
-
-Crie a variável `MCP_BIGQUERY_KEY` com a sua chave.
-
-Windows (PowerShell):
-
-```powershell
-setx MCP_BIGQUERY_KEY "mcpbq_SUA_CHAVE"
-```
-
-macOS/Linux:
-
-```bash
-echo 'export MCP_BIGQUERY_KEY="mcpbq_SUA_CHAVE"' >> ~/.zshrc
-```
-
-Depois, crie o arquivo `.mcp.json` na pasta do projeto:
-
-```json
-{
-  "mcpServers": {
-    "bigquery": {
-      "type": "http",
-      "url": "https://<endereço-informado>/mcp",
-      "headers": { "Authorization": "Bearer ${MCP_BIGQUERY_KEY}" }
-    }
-  }
-}
-```
-
-Abra um terminal novo para a variável valer.
-
----
-
-## 3. Configurar no Claude Desktop (app de chat)
-
-### Opção A: arquivo de configuração + `mcp-remote` (funciona hoje, em qualquer plano)
-
-Requisitos:
-
-- [Node.js](https://nodejs.org), versão **LTS** (a recomendada no site). Depois de instalar, **reinicie o computador**, para o Claude Desktop encontrar o `npx`.
-- Internet liberada para o npm: na primeira vez, o `npx` baixa automaticamente o `mcp-remote`, a ponte entre o Claude Desktop e o servidor.
-
-Passo a passo:
+### Passo a passo
 
 1. No Claude Desktop, abra **Configurações → Desenvolvedor → Editar configuração**. Isso mostra o arquivo `claude_desktop_config.json`. Abra-o num editor de texto (ex.: Bloco de Notas).
 
@@ -117,25 +80,94 @@ Passo a passo:
     > A chave fica no `env`, e não direto nos `args`, porque no Windows espaços dentro dos argumentos quebram o cabeçalho.
 
 3. Salve o arquivo. **Feche o Claude Desktop por completo**: no Windows, clique com o botão direito no ícone da bandeja do sistema (perto do relógio) e escolha **Sair**; fechar só a janela não basta. Depois, abra o app de novo.
+
 4. **Teste:** numa conversa nova, pergunte **"Quais datasets eu tenho no BigQuery?"**. Na primeira vez, o Claude pede autorização para usar a ferramenta do BigQuery: permita. A resposta deve listar os datasets liberados para a sua chave.
 
-    Se não funcionar, veja **Configurações → Desenvolvedor** (o `bigquery` deve aparecer como em execução) e a seção 6.
+    Se não funcionar, veja **Configurações → Desenvolvedor** (o `bigquery` deve aparecer como em execução) e os [problemas comuns do Claude Desktop](#claude-desktop).
 
-### Opção B: conector personalizado (sem Node.js)
+### Alternativa sem Node.js: conector personalizado
 
-Em **Configurações → Conectores → Adicionar conector personalizado**, informe a URL. O que fazer em seguida depende da sua conta:
+Só funciona se a sua conta tiver o recurso de cabeçalhos, que a Anthropic está liberando aos poucos e que geralmente **ainda não aparece no plano grátis**:
 
-- **Se a sua conta mostrar "Request headers"/"Cabeçalhos de requisição":**
-    1. Escolha **No sign-in**.
-    2. Adicione o cabeçalho `authorization` com o valor `Bearer mcpbq_SUA_CHAVE`.
-- **Se não mostrar:** esse recurso ainda está em liberação gradual pela Anthropic. Use a opção A. O login por OAuth está no roadmap do servidor e vai dispensar o `mcp-remote`.
-- **Planos Team e Enterprise:** só o Owner da organização adiciona conectores personalizados.
+1. Abra **Configurações → Conectores → Adicionar conector personalizado** e informe a URL.
+2. Se aparecer a seção **"Request headers"** ("Cabeçalhos de requisição"):
+    1. escolha **No sign-in**;
+    2. adicione o cabeçalho `authorization` com o valor `Bearer mcpbq_SUA_CHAVE`.
+3. Se essa seção **não** aparecer, use o passo a passo acima. O login por OAuth está no roadmap do servidor e vai dispensar o `mcp-remote`.
+
+O plano grátis permite **um** conector personalizado.
+
+---
+
+## 3. Cenário 2: Claude Code (plano Pro)
+
+O Claude Code se conecta direto ao servidor, sem ponte e sem Node.js.
+
+### Requisitos
+
+- **[Claude Code](https://code.claude.com/docs)** instalado e com login na sua conta **Pro**.
+
+### Passo a passo
+
+1. Num terminal (PowerShell, CMD, bash ou zsh), rode o comando abaixo, trocando a URL e a chave:
+
+    ```bash
+    claude mcp add --transport http --scope user bigquery https://<endereço-informado>/mcp --header "Authorization: Bearer mcpbq_SUA_CHAVE"
+    ```
+
+    - `--scope user` deixa o BigQuery disponível em todos os seus projetos. Para usar só na pasta atual, troque por `--scope local`.
+
+2. **Confira a conexão:**
+
+    ```bash
+    claude mcp list
+    ```
+
+    O `bigquery` deve aparecer com **✓ Connected**.
+
+3. **Teste:** abra o Claude Code (`claude`) e pergunte **"Quais datasets eu tenho no BigQuery?"**. Na primeira vez, autorize o uso da ferramenta. Dentro do Claude Code, o comando `/mcp` mostra o servidor e as ferramentas.
+
+    Se não funcionar, veja os [problemas comuns do Claude Code](#claude-code).
+
+### Alternativa: chave em variável de ambiente (sem gravá-la em arquivo)
+
+Útil para não deixar a chave escrita na configuração do Claude Code.
+
+1. Crie a variável `MCP_BIGQUERY_KEY` com a sua chave.
+
+    Windows (PowerShell):
+
+    ```powershell
+    setx MCP_BIGQUERY_KEY "mcpbq_SUA_CHAVE"
+    ```
+
+    macOS/Linux:
+
+    ```bash
+    echo 'export MCP_BIGQUERY_KEY="mcpbq_SUA_CHAVE"' >> ~/.zshrc
+    ```
+
+2. Crie o arquivo `.mcp.json` na pasta do projeto:
+
+    ```json
+    {
+      "mcpServers": {
+        "bigquery": {
+          "type": "http",
+          "url": "https://<endereço-informado>/mcp",
+          "headers": { "Authorization": "Bearer ${MCP_BIGQUERY_KEY}" }
+        }
+      }
+    }
+    ```
+
+3. Abra um terminal novo, para a variável valer, e rode o Claude Code nessa pasta.
 
 ---
 
 ## 4. Usando o BigQuery da sua empresa
 
-Pule este passo se você vai consultar dados que já estão no BigQuery da CLI.
+Pule este passo se você vai consultar dados que já estão no BigQuery da CLI. Vale para os dois cenários.
 
 ### Opção 1 (recomendada): conceder acesso à Service Account da CLI
 
@@ -176,7 +208,7 @@ Por fim, envie ao administrador o **ID do projeto**, os **datasets** liberados e
 
 ## 5. Usando
 
-Converse normalmente. Exemplos:
+Converse normalmente, nos dois cenários. Exemplos:
 
 - "Quais datasets e tabelas eu tenho no BigQuery?"
 - "Mostre o schema da tabela `vendas.pedidos`."
@@ -186,6 +218,7 @@ Converse normalmente. Exemplos:
 O Claude tem estas ferramentas: `list_datasets`, `list_tables`, `get_table_schema`, `dry_run_query` e `run_query`.
 
 **Limites:**
+
 - só leitura (`SELECT`);
 - até 1.000 linhas por resposta;
 - teto de bytes processados por consulta;
@@ -195,20 +228,37 @@ O Claude tem estas ferramentas: `list_datasets`, `list_tables`, `get_table_schem
 
 ## 6. Problemas comuns
 
+### Claude Desktop
+
 | Sintoma | Causa provável e solução |
 |---|---|
-| `401 Unauthorized` / "Failed to connect" | Chave errada, expirada ou revogada. Confira se o valor começa com `Bearer mcpbq_`. Se o erro continuar, peça uma nova chave ao administrador. |
+| O BigQuery não aparece | O JSON da configuração está inválido (vírgula ou chave `}` faltando), ou o app não foi fechado pela bandeja. Confira o arquivo num validador de JSON e veja os logs (linha abaixo). |
+| Onde ficam os logs | Windows: `%APPDATA%\Claude\logs\mcp-server-bigquery.log`. macOS: `~/Library/Logs/Claude/mcp-server-bigquery.log`. Também em **Configurações → Desenvolvedor**. |
+| `spawn npx ENOENT` ou `npx` não encontrado | O Node.js não está instalado, ou o computador não foi reiniciado depois da instalação. Se continuar no Windows, troque `"command": "npx"` por `"command": "C:\\Program Files\\nodejs\\npx.cmd"` (com as barras duplas). |
+| Erro de rede ao baixar o `mcp-remote` | A rede bloqueia o npm (comum em redes corporativas com proxy). Teste em outra rede ou peça à sua TI a liberação de `registry.npmjs.org`. |
+| O navegador abre pedindo autorização (OAuth) | A chave não chegou ao servidor. Confira o `env` (`"Bearer mcpbq_..."`) e o `--header` (`"Authorization:${MCP_BIGQUERY_AUTH}"`), exatamente como no passo 2. |
+
+### Claude Code
+
+| Sintoma | Causa provável e solução |
+|---|---|
+| `claude mcp list` mostra falha na conexão do `bigquery` | Chave ou URL erradas. Remova com `claude mcp remove bigquery` e adicione de novo (passo 1), conferindo `Bearer mcpbq_...` e o `/mcp` no fim da URL. |
+| `claude` não é reconhecido como comando | O Claude Code não está instalado, ou o terminal foi aberto antes da instalação. Abra um terminal novo. |
+| Com `.mcp.json`, o BigQuery não conecta | A variável `MCP_BIGQUERY_KEY` não está definida no terminal atual. Abra um terminal novo depois do `setx` e rode o Claude Code na pasta do `.mcp.json`. |
+
+### Nos dois cenários
+
+| Sintoma | Causa provável e solução |
+|---|---|
+| `401 Unauthorized` / "Failed to connect" | Chave errada, expirada ou revogada. Se o erro continuar depois de conferir a chave, peça uma nova ao administrador. |
 | `ScopeError: Dataset 'x' não está liberado` | A sua chave não inclui esse dataset. Peça a inclusão ao administrador. |
 | `Forbidden` / `Access Denied` vindo do BigQuery | Falta permissão IAM para a Service Account no projeto ou no dataset (passo 4). |
 | `NotFound` | Nome da tabela ou dataset errado, ou região diferente. Use `list_tables` para conferir. |
-| Claude Desktop não mostra o BigQuery | O JSON da configuração está inválido (vírgula ou chave `}` faltando), ou o app não foi fechado pela bandeja. Confira o arquivo num validador de JSON e veja os logs (linha abaixo). |
-| Onde ficam os logs do Claude Desktop | Windows: `%APPDATA%\Claude\logs\mcp-server-bigquery.log`. macOS: `~/Library/Logs/Claude/mcp-server-bigquery.log`. Também em **Configurações → Desenvolvedor**. |
-| `spawn npx ENOENT` ou `npx` não encontrado | O Node.js não está instalado ou o computador não foi reiniciado depois da instalação. Se continuar no Windows, troque `"command": "npx"` por `"command": "C:\\Program Files\\nodejs\\npx.cmd"` (com as barras duplas). |
-| Erro de rede ao baixar o `mcp-remote` | A rede bloqueia o npm (comum em redes corporativas com proxy). Teste em outra rede ou peça a liberação de `registry.npmjs.org` à sua TI. |
-| O navegador abre pedindo autorização (OAuth) | A chave não chegou ao servidor. Confira o `env` (`"Bearer mcpbq_..."`) e o `--header` (`"Authorization:${MCP_BIGQUERY_AUTH}"`), exatamente como no passo 2. |
 
 ## Segurança
 
 - A chave é **pessoal**. Você pode usá-la em todos os seus computadores, no Claude Code e no Claude Desktop, mas não a compartilhe com outras pessoas nem a coloque em repositórios.
 - Perdeu a chave ou suspeita de vazamento? Peça a **revogação** ao administrador. O acesso é cortado na hora.
-- Para remover do Claude Code: `claude mcp remove bigquery`. No Claude Desktop, apague o bloco `"bigquery"` da configuração.
+- Para remover:
+    - **Claude Desktop:** apague o bloco `"bigquery"` da configuração e reinicie o app;
+    - **Claude Code:** `claude mcp remove bigquery`.
