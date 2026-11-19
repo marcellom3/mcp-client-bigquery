@@ -17,8 +17,8 @@ O mesmo servidor atende vários clientes, mas cada um tem acesso **isolado**: a 
 
 | Você usa | Siga | O que precisa instalar |
 |---|---|---|
-| **Claude Desktop** (app de chat), **plano grátis** | [Cenário 1](#2-cenário-1-claude-desktop-plano-grátis) | Claude Desktop + Node.js |
-| **Claude Code**, **plano Pro** | [Cenário 2](#3-cenário-2-claude-code-plano-pro) | Claude Code |
+| **Claude Desktop** (app de chat) ou **claude.ai** no navegador, **qualquer plano** (inclusive o grátis) | [Cenário 1](#2-cenário-1-claude-desktop-ou-claudeai-pela-tela-conectores) | Nada: tudo pela tela, sem linha de comando |
+| **Claude Code** | [Cenário 2](#3-cenário-2-claude-code-plano-pro) | Claude Code |
 
 A mesma chave funciona nos dois cenários, e em todos os seus computadores.
 
@@ -39,21 +39,56 @@ Você recebe de volta a **URL** e a **chave**. Guarde a chave como uma senha.
 
 ---
 
-## 2. Cenário 1: Claude Desktop (plano grátis)
+## 2. Cenário 1: Claude Desktop ou claude.ai, pela tela Conectores
 
-O Claude Desktop se conecta ao servidor por meio de uma pequena ponte, o `mcp-remote`, que roda no seu computador com o Node.js.
+Tudo é feito pela tela do Claude, sem linha de comando e sem instalar nada. Funciona no **Claude Desktop** e no **claude.ai** pelo navegador, em **qualquer plano**.
 
-### Requisitos
-
-- **Claude Desktop** instalado, com login na sua conta (o plano grátis serve).
-- **[Node.js](https://nodejs.org)**, versão **LTS** (a recomendada no site). Depois de instalar, **reinicie o computador**, para o Claude Desktop encontrar o `npx`.
-- **Internet liberada para o npm.** Na primeira vez, o `npx` baixa automaticamente o `mcp-remote`.
+- **Plano grátis:** permite **um** conector personalizado.
+- **Planos Team e Enterprise:** quem adiciona o conector é o **Owner** da organização (em **Configurações da organização → Conectores**). Depois, cada pessoa só clica em **Conectar** e cola a própria chave (passo 6).
 
 ### Passo a passo
 
-1. No Claude Desktop, abra **Configurações → Desenvolvedor → Editar configuração**. Isso mostra o arquivo `claude_desktop_config.json`. Abra-o num editor de texto (ex.: Bloco de Notas).
+1. No Claude, abra **Personalizar → Conectores**. Em algumas versões do app, o caminho é **Configurações → Conectores**.
 
-    Se não encontrar essa opção, abra o arquivo direto:
+2. Clique em **Adicionar** e escolha **Adicionar conector personalizado**.
+
+3. Preencha:
+
+    | Campo | O que colocar |
+    |---|---|
+    | **Nome** | `BigQuery` |
+    | **URL do servidor MCP** | `https://mcp-bigquery.tsk4ad.easypanel.host/mcp` |
+
+    Clique em **Continuar**, se o botão aparecer.
+
+4. **Autenticação:** o Claude lê as configurações do servidor e marca as opções sozinho, como **Detectado**. **Mantenha o que vier marcado.**
+
+    Se ele pedir para escolher:
+
+    - autenticação: **Entrar agora** (*Sign in now*);
+    - cliente OAuth: **Registrar automaticamente** (*Register automatically*).
+
+    Não preencha cabeçalhos, Client ID nem Client Secret.
+
+5. Clique em **Adicionar**.
+
+6. Clique em **Conectar**. O navegador abre a página **"Conectar ao MCP BigQuery"**:
+    1. cole a sua chave (`mcpbq_...`) no campo **Chave de acesso**;
+    2. clique em **Conectar**.
+
+    Você volta para o Claude, já conectado. Se o navegador perguntar se pode abrir o Claude, permita.
+
+7. **Na conversa**, confira se o conector está ligado: clique no botão **+** (ou no ícone de ferramentas) do campo de mensagem, abra **Conectores** e ative o **BigQuery**.
+
+8. **Teste:** pergunte **"Quais datasets eu tenho no BigQuery?"**. Na primeira vez, o Claude pede autorização para usar a ferramenta: permita. A resposta deve listar os datasets liberados para a sua chave.
+
+Se algo não funcionar, veja os [problemas comuns do conector](#conector-claude-desktop-e-claudeai).
+
+### Alternativa avançada: arquivo de configuração + `mcp-remote` (só Claude Desktop)
+
+Use só se, por algum motivo, o conector não puder ser usado na sua conta. Exige o [Node.js](https://nodejs.org) (versão LTS) instalado e o computador reiniciado depois da instalação.
+
+1. No Claude Desktop, abra **Configurações → Desenvolvedor → Editar configuração** e abra o arquivo `claude_desktop_config.json` num editor de texto. Se não encontrar a opção, abra o arquivo direto:
 
     | Sistema | Caminho do arquivo |
     |---|---|
@@ -61,9 +96,7 @@ O Claude Desktop se conecta ao servidor por meio de uma pequena ponte, o `mcp-re
     | Windows (Microsoft Store) | `%LOCALAPPDATA%\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\claude_desktop_config.json` |
     | macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
 
-    No Windows, cole o caminho na barra de endereço do Explorador de Arquivos. Se o arquivo não existir, crie-o com esse nome.
-
-2. Adicione o bloco abaixo, trocando `mcpbq_SUA_CHAVE` pela chave que você recebeu (a URL já está certa). Mantenha a palavra `Bearer` e o espaço antes da chave. Se o arquivo já tiver um `"mcpServers"`, inclua só o item `"bigquery"` dentro dele, separado dos outros por vírgula.
+2. Adicione o bloco abaixo, trocando `mcpbq_SUA_CHAVE` pela sua chave e mantendo a palavra `Bearer` e o espaço. Se o arquivo já tiver um `"mcpServers"`, inclua só o item `"bigquery"` dentro dele, separado dos outros por vírgula.
 
     ```json
     {
@@ -77,25 +110,7 @@ O Claude Desktop se conecta ao servidor por meio de uma pequena ponte, o `mcp-re
     }
     ```
 
-    > A chave fica no `env`, e não direto nos `args`, porque no Windows espaços dentro dos argumentos quebram o cabeçalho.
-
-3. Salve o arquivo. **Feche o Claude Desktop por completo**: no Windows, clique com o botão direito no ícone da bandeja do sistema (perto do relógio) e escolha **Sair**; fechar só a janela não basta. Depois, abra o app de novo.
-
-4. **Teste:** numa conversa nova, pergunte **"Quais datasets eu tenho no BigQuery?"**. Na primeira vez, o Claude pede autorização para usar a ferramenta do BigQuery: permita. A resposta deve listar os datasets liberados para a sua chave.
-
-    Se não funcionar, veja **Configurações → Desenvolvedor** (o `bigquery` deve aparecer como em execução) e os [problemas comuns do Claude Desktop](#claude-desktop).
-
-### Alternativa sem Node.js: conector personalizado
-
-Só funciona se a sua conta tiver o recurso de cabeçalhos, que a Anthropic está liberando aos poucos e que geralmente **ainda não aparece no plano grátis**:
-
-1. Abra **Configurações → Conectores → Adicionar conector personalizado** e informe a URL.
-2. Se aparecer a seção **"Request headers"** ("Cabeçalhos de requisição"):
-    1. escolha **No sign-in**;
-    2. adicione o cabeçalho `authorization` com o valor `Bearer mcpbq_SUA_CHAVE`.
-3. Se essa seção **não** aparecer, use o passo a passo acima. O login por OAuth está no roadmap do servidor e vai dispensar o `mcp-remote`.
-
-O plano grátis permite **um** conector personalizado.
+3. Salve, feche o Claude Desktop **pela bandeja do sistema** (botão direito no ícone perto do relógio → **Sair**) e abra de novo. Teste como no passo 8 acima.
 
 ---
 
@@ -229,7 +244,18 @@ O Claude tem estas ferramentas: `list_datasets`, `list_tables`, `get_table_schem
 
 ## 6. Problemas comuns
 
-### Claude Desktop
+### Conector (Claude Desktop e claude.ai)
+
+| Sintoma | Causa provável e solução |
+|---|---|
+| A página de login diz **"Chave inválida, expirada ou revogada"** | Confira se colou a chave inteira, começando com `mcpbq_`, sem espaços. Se continuar, peça ao administrador para verificar a sua chave. |
+| A página de login diz **"Este link de conexão expirou ou já foi usado"** | Você levou mais de 10 minutos para colar a chave, ou recarregou a página. Volte ao Claude e clique em **Conectar** de novo. |
+| O **Conectar** dá erro antes de abrir a página de login | Confira a URL do conector (deve terminar em `/mcp`). Se estiver certa, avise o administrador: o servidor pode estar fora do ar. |
+| Não aparece a opção **Adicionar conector personalizado** | No plano grátis, só cabe um conector personalizado; remova o outro, se houver. Nos planos Team e Enterprise, só o Owner da organização adiciona. |
+| O conector está conectado, mas o Claude não usa o BigQuery | Ative o conector na conversa (botão **+** → **Conectores**) e peça explicitamente: "use o BigQuery para...". |
+| Depois de um tempo, o Claude pede para conectar de novo | A sua chave expirou ou a conexão ficou 30 dias sem uso. Clique em **Conectar** e cole a chave de novo; se ela tiver expirado, peça ao administrador para estender a validade. |
+
+### Claude Desktop pelo arquivo de configuração (alternativa avançada)
 
 | Sintoma | Causa provável e solução |
 |---|---|
@@ -261,5 +287,6 @@ O Claude tem estas ferramentas: `list_datasets`, `list_tables`, `get_table_schem
 - A chave é **pessoal**. Você pode usá-la em todos os seus computadores, no Claude Code e no Claude Desktop, mas não a compartilhe com outras pessoas nem a coloque em repositórios.
 - Perdeu a chave ou suspeita de vazamento? Peça a **revogação** ao administrador. O acesso é cortado na hora.
 - Para remover:
-    - **Claude Desktop:** apague o bloco `"bigquery"` da configuração e reinicie o app;
+    - **Conector:** **Personalizar → Conectores** → **BigQuery** → **Remover**;
+    - **Claude Desktop pelo arquivo:** apague o bloco `"bigquery"` da configuração e reinicie o app;
     - **Claude Code:** `claude mcp remove bigquery`.
